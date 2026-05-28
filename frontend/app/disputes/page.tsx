@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useModalFocusTrap } from "@/lib/modal";
 import { useWallet } from "@/lib/wallet-context";
+import EmptyState from "@/components/EmptyState";
 import SectionCard from "@/components/SectionCard";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -142,15 +143,6 @@ function StatusBadge({ status }: { status: DisputeStatus }) {
       <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
       {m.label}
     </span>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
-      <span className="text-4xl">⚖️</span>
-      <p className="mt-3 text-sm text-slate-500">{message}</p>
-    </div>
   );
 }
 
@@ -787,13 +779,15 @@ export default function DisputesPage() {
           </div>
         ) : filteredDisputes.length === 0 ? (
           <EmptyState
-            message={
+            title="No disputes found"
+            description={
               filter === "active"
                 ? "No active disputes yet."
                 : filter === "resolved"
-                ? "No resolved disputes yet."
-                : "No disputes yet."
+                  ? "No resolved disputes yet."
+                  : "No disputes yet."
             }
+            className="border-slate-200 bg-slate-50"
           />
         ) : (
           <div className="space-y-3">

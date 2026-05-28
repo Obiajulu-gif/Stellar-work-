@@ -63,6 +63,11 @@ export default function JobDetailPage() {
 
   const isClient = wallet && job && wallet === job.client;
   const isFreelancer = wallet && job && wallet === job.freelancer;
+  const canAccept = Boolean(job && job.status === "Open");
+  const canSubmit = Boolean(isFreelancer && job?.status === "InProgress");
+  const canApprove = Boolean(isClient && job?.status === "SubmittedForReview");
+  const canCancel = Boolean(isClient && job?.status === "Open");
+  const hasPrimaryActions = canAccept || canSubmit || canApprove || canCancel;
 
   function getDescription(hash: string): string {
     const stored = localStorage.getItem(`job-desc:${hash}`);
@@ -147,7 +152,7 @@ export default function JobDetailPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 pb-28 sm:pb-32">
       <div className="flex items-center gap-4">
         <Link href="/" className="text-sm text-blue-600 hover:underline">
           Back
@@ -220,63 +225,68 @@ export default function JobDetailPage() {
           {job.deadline === "0" ? "No deadline" : new Date(Number(job.deadline) * 1000).toLocaleString()}
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {job.status === "Open" && (
-            <button
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={() => {
-                if (!wallet) {
-                  return;
-                }
-                void handleAction(() => acceptJob(wallet, id));
-              }}
-              disabled={!wallet || loading}
-              title={!wallet ? "Connect your wallet to accept this job." : undefined}
-              aria-busy={loading}
-            >
-              {loading ? "Processing..." : "Accept Job"}
-            </button>
-          )}
-
-          {isFreelancer && job.status === "InProgress" && (
-            <button
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={() => handleAction(() => submitWork(wallet, id))}
-              disabled={loading}
-              aria-busy={loading}
-            >
-              {loading ? "Processing..." : "Submit Work"}
-            </button>
-          )}
-
-          {isClient && job.status === "SubmittedForReview" && (
-            <button
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={() => handleAction(() => approveWork(wallet, id))}
-              disabled={loading}
-              aria-busy={loading}
-            >
-              {loading ? "Processing..." : "Approve Work"}
-            </button>
-          )}
-
-          {isClient && job.status === "Open" && (
-            <button
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={() => handleAction(() => cancelJob(wallet, id))}
-              disabled={loading}
-              aria-busy={loading}
-            >
-              {loading ? "Processing..." : "Cancel Job"}
-            </button>
-          )}
-        </div>
         {!wallet && (
           <p className="text-xs text-amber-700">
             Connect your wallet to enable contract actions.
           </p>
         )}
       </article>
+
+      {hasPrimaryActions && (
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+          <div className="mx-auto flex w-full max-w-4xl flex-wrap gap-2 sm:justify-end">
+            {canAccept && (
+              <button
+                className="min-w-0 flex-1 rounded-md border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500 sm:flex-none sm:max-w-48"
+                onClick={() => {
+                  if (!wallet) {
+                    return;
+                  }
+                  void handleAction(() => acceptJob(wallet, id));
+                }}
+                disabled={!wallet || loading}
+                title={!wallet ? "Connect your wallet to accept this job." : undefined}
+                aria-busy={loading}
+              >
+                <span className="block truncate">{loading ? "Processing..." : "Accept Job"}</span>
+              </button>
+            )}
+
+            {canSubmit && (
+              <button
+                className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 sm:flex-none sm:max-w-48"
+                onClick={() => handleAction(() => submitWork(wallet!, id))}
+                disabled={loading}
+                aria-busy={loading}
+              >
+                <span className="block truncate">{loading ? "Processing..." : "Submit Work"}</span>
+              </button>
+            )}
+
+            {canApprove && (
+              <button
+                className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 sm:flex-none sm:max-w-48"
+                onClick={() => handleAction(() => approveWork(wallet!, id))}
+                disabled={loading}
+                aria-busy={loading}
+              >
+                <span className="block truncate">{loading ? "Processing..." : "Approve Work"}</span>
+              </button>
+            )}
+
+            {canCancel && (
+              <button
+                className="min-w-0 flex-1 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 sm:flex-none sm:max-w-48"
+                onClick={() => handleAction(() => cancelJob(wallet!, id))}
+                disabled={loading}
+                aria-busy={loading}
+              >
+                <span className="block truncate">{loading ? "Processing..." : "Cancel Job"}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -22,3 +22,24 @@ Use this checklist before creating a release tag.
 - Bump version in the release metadata used by maintainers
 - Create and push a version tag (example: `v1.2.0`)
 - Open GitHub release for the tag and attach notes/artifacts as needed
+
+## Rollback Checklist (Failed Release)
+
+- Halt rollout and pause any scheduled deployment jobs
+- Confirm failure scope (frontend, contract interaction, environment configuration, or mixed)
+- Revert to the last known-good deployment artifact or version tag
+- Re-point runtime environment values to the previous stable release if they changed
+- Validate rollback in production:
+  - Homepage loads and wallet connection works
+  - Open job listing renders and job detail routes resolve
+  - Contract reads (`get_job_count`, `get_job`) respond successfully
+  - Critical write path sanity check succeeds in a controlled environment
+- Verify observability after rollback:
+  - Error rate returns to pre-release baseline
+  - No elevated client-side console/runtime errors
+  - No new contract-level failures in transaction monitoring
+- Communicate status updates:
+  - Post rollback start and completion updates in the release channel
+  - Notify maintainers and contributors about impact and mitigation status
+  - Post user-facing incident update if release impact was externally visible
+- Open follow-up issue with root cause, timeline, and preventive actions before retrying release
