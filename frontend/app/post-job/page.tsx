@@ -196,9 +196,12 @@ export default function PostJobPage() {
               setFieldErrors((current) => ({ ...current, amount: undefined }));
             }}
             aria-invalid={Boolean(fieldErrors.amount)}
-            aria-describedby={fieldErrors.amount ? "post-job-amount-error" : undefined}
+            aria-describedby={fieldErrors.amount ? "post-job-amount-error" : "post-job-amount-helper"}
             required
           />
+          <p id="post-job-amount-helper" className="mt-1 text-xs text-slate-500">
+            Enter amount in XLM with up to 7 decimal places (e.g., 10.5 or 0.0000001)
+          </p>
           {fieldErrors.amount && (
             <p id="post-job-amount-error" className="mt-1 text-xs text-red-600">
               {fieldErrors.amount}
