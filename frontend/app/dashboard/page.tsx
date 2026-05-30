@@ -12,8 +12,11 @@ import {
 import CancelJobConfirmModal from "@/components/CancelJobConfirmModal";
 import EmptyState from "@/components/EmptyState";
 import ErrorBanner from "@/components/ErrorBanner";
+import InfoTooltip from "@/components/InfoTooltip";
 import JobCardSkeleton from "@/components/JobCardSkeleton";
+import NoResultsState from "@/components/NoResultsState";
 import SectionCard from "@/components/SectionCard";
+import StatusPill from "@/components/StatusPill";
 import { useToast } from "@/components/ToastProvider";
 import { formatDeadline, toXlm } from "@/lib/format";
 import { useWallet } from "@/lib/wallet-context";
@@ -35,15 +38,6 @@ const STATUS_LABELS: Record<JobStatus, string> = {
   Completed: "Completed",
   Cancelled: "Cancelled",
   Disputed: "Disputed",
-};
-
-const STATUS_COLORS: Record<JobStatus, string> = {
-  Open: "bg-blue-100 text-blue-800",
-  InProgress: "bg-yellow-100 text-yellow-800",
-  SubmittedForReview: "bg-purple-100 text-purple-800",
-  Completed: "bg-green-100 text-green-800",
-  Cancelled: "bg-red-100 text-red-800",
-  Disputed: "bg-orange-100 text-orange-800",
 };
 
 export default function DashboardPage() {
@@ -199,6 +193,13 @@ export default function DashboardPage() {
         role="toolbar"
         aria-label="Filter jobs by status"
       >
+        <div className="mr-1 flex items-center gap-2 text-sm text-slate-600">
+          <span>Filter:</span>
+          <InfoTooltip
+            label="Filter jobs by status help"
+            content="Use the status chips to narrow your job history. Arrow keys move between filters."
+          />
+        </div>
         {filterOptions.map((s, index) => (
           <button
             key={s}
@@ -218,7 +219,13 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
+      {error && (
+        <ErrorBanner
+          message={error}
+          onDismiss={() => setError(null)}
+          onRetry={() => void fetchJobs()}
+        />
+      )}
       {loading && (
         <div className="grid gap-4 md:grid-cols-2" aria-label="Loading jobs">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -232,22 +239,28 @@ export default function DashboardPage() {
           <JobSection
             title="Posted Jobs"
             subtitle="Jobs you created as a client"
+            allJobs={postedJobs}
             jobs={filteredPosted}
+            filterActive={statusFilter !== "All"}
             wallet={wallet}
             role="client"
             actionLoading={actionLoading}
             onAction={handleAction}
             onRequestCancel={setPendingCancelJobId}
+            onClearFilter={() => setStatusFilter("All")}
           />
           <JobSection
             title="Accepted Jobs"
             subtitle="Jobs you accepted as a freelancer"
+            allJobs={acceptedJobs}
             jobs={filteredAccepted}
+            filterActive={statusFilter !== "All"}
             wallet={wallet}
             role="freelancer"
             actionLoading={actionLoading}
             onAction={handleAction}
             onRequestCancel={setPendingCancelJobId}
+            onClearFilter={() => setStatusFilter("All")}
           />
         </>
       )}
@@ -269,31 +282,46 @@ export default function DashboardPage() {
 function JobSection({
   title,
   subtitle,
+  allJobs,
   jobs,
+  filterActive,
   wallet,
   role,
   actionLoading,
   onAction,
   onRequestCancel,
+  onClearFilter,
 }: {
   title: string;
   subtitle: string;
+  allJobs: Array<{ id: number; job: Job }>;
   jobs: Array<{ id: number; job: Job }>;
+  filterActive: boolean;
   wallet: string;
   role: "client" | "freelancer";
   actionLoading: number | null;
   onAction: (fn: () => Promise<unknown>, jobId: number) => Promise<void>;
   onRequestCancel: (jobId: number) => void;
+  onClearFilter: () => void;
 }) {
   return (
     <div>
       <h2 className="text-lg font-semibold">{title}</h2>
       <p className="mb-3 text-sm text-slate-500">{subtitle}</p>
       {jobs.length === 0 ? (
-        <EmptyState
-          title="No jobs yet"
-          description="No jobs match this filter yet."
-        />
+        filterActive && allJobs.length > 0 ? (
+          <NoResultsState
+            title="No jobs match this filter"
+            description="Try a different status or clear the filter to show every job in this section."
+            actionLabel="Clear filter"
+            onAction={onClearFilter}
+          />
+        ) : (
+          <EmptyState
+            title="No jobs yet"
+            description="No jobs match this filter yet."
+          />
+        )
       ) : (
         <ul className="grid list-none gap-4 sm:grid-cols-2" aria-label={title}>
           {jobs.map(({ id, job }) => (
@@ -338,11 +366,7 @@ function JobCard({
     <article className="interactive-card h-full p-4">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-medium">Job #{id}</h3>
-        <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[job.status]}`}
-        >
-          {STATUS_LABELS[job.status]}
-        </span>
+        <StatusPill status={job.status} />
       </div>
       <div className="mt-2 space-y-1 text-sm text-slate-600">
         <p className="flex min-w-0 items-baseline gap-1">

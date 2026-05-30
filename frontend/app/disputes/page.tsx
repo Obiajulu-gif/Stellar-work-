@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useModalFocusTrap } from "@/lib/modal";
 import { useWallet } from "@/lib/wallet-context";
 import EmptyState from "@/components/EmptyState";
+import NoResultsState from "@/components/NoResultsState";
 import SectionCard from "@/components/SectionCard";
 import {
   loadDisputesPageData,
@@ -683,17 +684,27 @@ export default function DisputesPage() {
             </button>
           </div>
         ) : filteredDisputes.length === 0 ? (
-          <EmptyState
-            title="No disputes found"
-            description={
-              filter === "active"
-                ? "No active disputes yet."
-                : filter === "resolved"
-                  ? "No resolved disputes yet."
-                  : "No disputes yet."
-            }
-            className="border-slate-200 bg-slate-50"
-          />
+          filter !== "all" && disputes.length > 0 ? (
+            <NoResultsState
+              title="No disputes match this filter"
+              description="Try a different tab or clear the filter to see every dispute."
+              actionLabel="Show all disputes"
+              onAction={() => setFilter("all")}
+              className="border-slate-200 bg-slate-50"
+            />
+          ) : (
+            <EmptyState
+              title="No disputes found"
+              description={
+                filter === "active"
+                  ? "No active disputes yet."
+                  : filter === "resolved"
+                    ? "No resolved disputes yet."
+                    : "No disputes yet."
+              }
+              className="border-slate-200 bg-slate-50"
+            />
+          )
         ) : (
           <div className="space-y-3">
             {filteredDisputes.map(d => (

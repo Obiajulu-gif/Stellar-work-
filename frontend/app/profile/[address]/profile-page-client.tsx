@@ -1,30 +1,13 @@
 "use client";
 
 import ErrorBanner from "@/components/ErrorBanner";
+import StatusPill from "@/components/StatusPill";
 import { getJob, getJobCount } from "@/lib/contract";
 import { toXlm } from "@/lib/format";
-import type { Job, JobStatus } from "@/lib/types";
+import type { Job } from "@/lib/types";
 import { useWallet } from "@/lib/wallet-context";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-
-const STATUS_LABELS: Record<JobStatus, string> = {
-  Open: "Open",
-  InProgress: "In Progress",
-  SubmittedForReview: "Submitted for Review",
-  Completed: "Completed",
-  Cancelled: "Cancelled",
-  Disputed: "Disputed",
-};
-
-const STATUS_COLORS: Record<JobStatus, string> = {
-  Open: "bg-blue-100 text-blue-800",
-  InProgress: "bg-yellow-100 text-yellow-800",
-  SubmittedForReview: "bg-purple-100 text-purple-800",
-  Completed: "bg-green-100 text-green-800",
-  Cancelled: "bg-red-100 text-red-800",
-  Disputed: "bg-orange-100 text-orange-800",
-};
 
 function isValidStellarAddress(address: string): boolean {
   return /^G[A-Z2-7]{55}$/.test(address);
@@ -154,7 +137,13 @@ export default function ProfilePageClient({ address }: { address: string }) {
         </div>
       </div>
 
-      {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
+      {error && (
+        <ErrorBanner
+          message={error}
+          onDismiss={() => setError(null)}
+          onRetry={() => void fetchJobs()}
+        />
+      )}
       {loading && <p className="text-sm text-slate-600">Loading job history...</p>}
 
       {!loading && (
@@ -219,11 +208,7 @@ export default function ProfilePageClient({ address }: { address: string }) {
                         </th>
                         <td className="py-2 pr-4 capitalize">{role}</td>
                         <td className="py-2 pr-4">
-                          <span
-                            className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[job.status]}`}
-                          >
-                            {STATUS_LABELS[job.status]}
-                          </span>
+                          <StatusPill status={job.status} />
                         </td>
                         <td className="py-2 pr-4 text-right">
                           <span className="inline-flex min-w-0 items-baseline justify-end gap-1">

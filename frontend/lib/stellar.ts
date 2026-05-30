@@ -76,7 +76,8 @@ export async function signTransaction(xdrValue: string): Promise<string> {
   return "signedTxXdr" in signed ? signed.signedTxXdr : signed;
 }
 
-const READONLY_SOURCE = Keypair.random().publicKey();
+// Use a stable placeholder account for read-only simulations when no wallet is connected.
+const READONLY_SOURCE = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF";
 
 export async function callContract(
   contractId: string,

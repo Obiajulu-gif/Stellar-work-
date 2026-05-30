@@ -9,6 +9,7 @@ import {
 } from "@/lib/contract";
 import EmptyState from "@/components/EmptyState";
 import ErrorBanner from "@/components/ErrorBanner";
+import StatusPill from "@/components/StatusPill";
 import SectionCard from "@/components/SectionCard";
 import { formatDeadline, toXlm } from "@/lib/format";
 import { useWallet } from "@/lib/wallet-context";
@@ -22,15 +23,6 @@ const STATUS_LABELS: Record<JobStatus, string> = {
   Completed: "Completed",
   Cancelled: "Cancelled",
   Disputed: "Disputed",
-};
-
-const STATUS_COLORS: Record<JobStatus, string> = {
-  Open: "bg-blue-100 text-blue-800",
-  InProgress: "bg-yellow-100 text-yellow-800",
-  SubmittedForReview: "bg-purple-100 text-purple-800",
-  Completed: "bg-green-100 text-green-800",
-  Cancelled: "bg-red-100 text-red-800",
-  Disputed: "bg-orange-100 text-orange-800",
 };
 
 export default function AdminPage() {
@@ -164,7 +156,13 @@ export default function AdminPage() {
     <section className="space-y-6">
       <h1 className="text-2xl font-semibold">Admin Panel</h1>
 
-      {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
+      {error && (
+        <ErrorBanner
+          message={error}
+          onDismiss={() => setError(null)}
+          onRetry={() => void fetchAdminData(wallet)}
+        />
+      )}
       {successMessage && (
         <p className="rounded-md bg-green-100 p-3 text-sm text-green-700">
           {successMessage}
@@ -233,11 +231,7 @@ export default function AdminPage() {
                   <tr key={id} className="border-b border-slate-100">
                     <th scope="row" className="py-2 pr-4 font-medium">#{id}</th>
                     <td className="py-2 pr-4">
-                      <span
-                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[job.status]}`}
-                      >
-                        {STATUS_LABELS[job.status]}
-                      </span>
+                      <StatusPill status={job.status} />
                     </td>
                     <td className="py-2 pr-4 font-mono text-xs">
                       {job.client.slice(0, 8)}...

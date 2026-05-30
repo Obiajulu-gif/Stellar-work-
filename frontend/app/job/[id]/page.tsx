@@ -1,8 +1,10 @@
 "use client";
 
 import CancelJobConfirmModal from "@/components/CancelJobConfirmModal";
+import InfoTooltip from "@/components/InfoTooltip";
 import LoadingState from "@/components/LoadingState";
 import { useToast } from "@/components/ToastProvider";
+import StatusPill from "@/components/StatusPill";
 import { acceptJob, approveWork, cancelJob, getJob, submitWork } from "@/lib/contract";
 import { formatDeadline, toXlm } from "@/lib/format";
 import { getExplorerTxUrl } from "@/lib/stellar";
@@ -154,10 +156,23 @@ export default function JobDetailPage() {
     return (
       <section className="space-y-4">
         <h1 className="text-2xl font-semibold">Job #{id}</h1>
-        <p className="text-sm text-slate-700">{error ?? "Job not found."}</p>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
-          Back to Home
-        </Link>
+        <div className="rounded-lg border border-slate-200 bg-white p-5 text-sm">
+          <p className="text-slate-700">{error ?? "Job not found."}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {error && error !== "Job not found." && (
+              <button
+                type="button"
+                onClick={() => void load()}
+                className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
+              >
+                Retry
+              </button>
+            )}
+            <Link href="/" className="rounded-md border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50">
+              Back to Home
+            </Link>
+          </div>
+        </div>
       </section>
     );
   }
@@ -192,7 +207,7 @@ export default function JobDetailPage() {
 
       <article className="space-y-2 rounded-lg border border-slate-200 bg-white p-5 text-sm">
         <p>
-          <strong>Status:</strong> {job.status}
+          <strong>Status:</strong> <StatusPill status={job.status} />
         </p>
         <p>
           <strong>Client:</strong> {job.client}
@@ -206,9 +221,16 @@ export default function JobDetailPage() {
         <p>
           <strong>Description:</strong> {getDescription(job.description_hash)}
         </p>
-        <div className="flex items-center gap-2">
-          <p>
-            <strong>Description hash:</strong>{" "}
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="flex items-center gap-2">
+            <strong className="inline-flex items-center gap-2">
+              Description hash
+              <InfoTooltip
+                label="Description hash help"
+                content="This hash identifies the stored job description and is useful when comparing records across devices."
+              />
+              :
+            </strong>
             <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
               {job.description_hash}
             </code>

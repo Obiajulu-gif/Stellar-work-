@@ -39,10 +39,14 @@ describe("Profile Route Fallback Handling", () => {
 
     // Check for invalid address message
     expect(screen.getByText("Invalid Address")).toBeInTheDocument();
-    expect(screen.getByText(`"${invalidAddress}" is not a valid Stellar address.`)).toBeInTheDocument();
+    expect(
+      screen.getByText(new RegExp(`${invalidAddress}.*valid Stellar address`)),
+    ).toBeInTheDocument();
     
     // Check for helpful hint
-    expect(screen.getByText(/Stellar addresses start with "G"/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Stellar addresses start with .*G.*56 characters long/),
+    ).toBeInTheDocument();
 
     // Check for back navigation
     const backLink = screen.getByRole("link", { name: /Back to Home/ });
