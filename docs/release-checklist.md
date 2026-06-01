@@ -14,7 +14,7 @@ Use this checklist before creating a release tag.
 - Run unit tests: `cd frontend && npm test`
 - Run lint checks: `cd frontend && npm run lint`
 - Build production bundle: `cd frontend && npm run build`
-- Verify `NEXT_PUBLIC_CONTRACT_ID` is set for the target environment
+- Verify `NEXT_PUBLIC_CONTRACT_ID`, `NEXT_PUBLIC_NETWORK`, and `NEXT_PUBLIC_SOROBAN_RPC` match the target environment. See `docs/environments.md`.
 
 ## Communications
 

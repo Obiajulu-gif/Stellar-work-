@@ -133,7 +133,11 @@ Set at minimum:
 
 ```bash
 NEXT_PUBLIC_CONTRACT_ID=<CONTRACT_ID>
+NEXT_PUBLIC_NETWORK=testnet
+NEXT_PUBLIC_SOROBAN_RPC=https://soroban-testnet.stellar.org
 ```
+
+See `docs/environments.md` for the complete environment variable reference, defaults, and Testnet/Mainnet notes.
 
 Then run:
 
@@ -172,6 +176,7 @@ soroban contract invoke \
 - Core pages: `/`, `/post-job`, `/job/[id]`
 
 For a command-only deployment reference, see `docs/testnet-deployment-guide.md`.
+For environment configuration, see `docs/environments.md`.
 
 For the full documentation index, see [docs/README.md](docs/README.md).
 
