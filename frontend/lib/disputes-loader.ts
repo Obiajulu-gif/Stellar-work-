@@ -17,6 +17,7 @@ export interface Dispute {
   status: DisputeStatus;
   reason: string;
   evidence?: string;
+  evidenceHash?: string;
   resolution?: {
     resolvedAt: string;
     clientShare: number;

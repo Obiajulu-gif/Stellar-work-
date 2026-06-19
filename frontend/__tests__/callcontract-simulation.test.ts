@@ -13,6 +13,7 @@ const signTransactionSpy = vi.fn();
 const isAllowedMock = vi.fn();
 const getAddressMock = vi.fn();
 
+
 class FakeAccount {
   constructor(public id: string, public sequence: string) {}
   accountId() {
