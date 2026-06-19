@@ -12,6 +12,7 @@ import {
   type DisputeStatus,
   type EligibleJob,
 } from "@/lib/disputes-loader";
+import { raiseDispute as contractRaiseDispute } from "@/lib/contract";
 
 type Role = "client" | "freelancer" | "admin";
 
@@ -272,6 +273,17 @@ function ResolveModal({
           }}
         >
           <div className="px-6 py-5 space-y-5">
+          {/* Evidence display */}
+          {dispute.evidence && (
+            <div className="rounded-lg bg-slate-50 ring-1 ring-slate-100 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Raised Evidence</p>
+              <p className="text-xs text-slate-600">{dispute.evidence}</p>
+              {dispute.evidenceHash && (
+                <p className="text-[10px] font-mono text-slate-400 mt-1 break-all">Hash: {dispute.evidenceHash}</p>
+              )}
+            </div>
+          )}
+
           {/* Fund split */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -415,6 +427,13 @@ function DisputeCard({
             </div>
           )}
 
+          {dispute.evidenceHash && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Evidence Hash</p>
+              <p className="text-xs font-mono text-slate-500 break-all">{dispute.evidenceHash}</p>
+            </div>
+          )}
+
           {dispute.resolution && (
             <div className="rounded-lg bg-emerald-50 ring-1 ring-emerald-100 p-3 space-y-2">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">Resolution — {fmtDate(dispute.resolution.resolvedAt)}</p>
@@ -529,9 +548,30 @@ export default function DisputesPage() {
   });
 
   async function handleRaiseDispute(jobId: string, reason: string, evidence: string) {
-    // Simulate SC-1 smart contract call
-    await new Promise(res => setTimeout(res, 1200));
-    const job = eligibleJobs.find(j => j.id === jobId)!;
+    const encoder = new TextEncoder();
+
+    const reasonHashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(reason));
+    const reasonHashHex = Array.from(new Uint8Array(reasonHashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    let evidenceHashHex: string | undefined;
+    if (evidence.trim()) {
+      const evidenceHashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(evidence));
+      evidenceHashHex = Array.from(new Uint8Array(evidenceHashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    const reasonPreview = reason.padEnd(64, "\0").slice(0, 64);
+    const previewBytes = encoder.encode(reasonPreview);
+    const previewHex = Array.from(previewBytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    await contractRaiseDispute(wallet!, jobId, evidenceHashHex, previewHex);
+
+    const job = eligibleJobs.find((j) => j.id === jobId)!;
     const newDispute: Dispute = {
       id: `D-00${disputes.length + 1}`,
       jobId,
@@ -544,8 +584,9 @@ export default function DisputesPage() {
       status: "Active",
       reason,
       evidence,
+      evidenceHash: evidenceHashHex,
     };
-    setDisputes(prev => [newDispute, ...prev]);
+    setDisputes((prev) => [newDispute, ...prev]);
     setToast({ msg: "Dispute raised. Funds held in escrow.", type: "success" });
   }
 

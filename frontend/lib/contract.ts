@@ -1,7 +1,7 @@
 "use client";
 
 import { callContract, nativeToScVal } from "@/lib/stellar";
-import type { Job } from "@/lib/types";
+import type { Job, DisputeEvidence } from "@/lib/types";
 
 export function hexToBytes(hex: string): Uint8Array {
   const normalized = hex.startsWith("0x") ? hex.slice(2) : hex;
@@ -106,11 +106,31 @@ export async function extendJobTtl(caller: string, jobId: string) {
   ]);
 }
 
-export async function raiseDispute(caller: string, jobId: string) {
-  return callContract(requireContractId(), "raise_dispute", [
+export async function raiseDispute(
+  caller: string,
+  jobId: string,
+  evidenceHash?: string,
+  reasonPreview?: string,
+) {
+  const args = [
     nativeToScVal(caller, { type: "address" }),
     nativeToScVal(jobId, { type: "u64" }),
-  ]);
+  ];
+
+  if (evidenceHash) {
+    args.push(nativeToScVal(hexToBytes(evidenceHash), { type: "bytes" }));
+  } else {
+    args.push(nativeToScVal(null, { type: "option" }));
+  }
+
+  if (reasonPreview) {
+    const previewBytes = new TextEncoder().encode(reasonPreview.padEnd(64, "\0").slice(0, 64));
+    args.push(nativeToScVal(previewBytes, { type: "bytes" }));
+  } else {
+    args.push(nativeToScVal(null, { type: "option" }));
+  }
+
+  return callContract(requireContractId(), "raise_dispute", args);
 }
 
 export async function resolveDispute(jobId: string, winner: string) {
@@ -176,6 +196,18 @@ export async function getJob(jobId: string): Promise<Job | null> {
     { readOnly: true },
   );
   return (response.data as Job) ?? null;
+}
+
+export async function getDisputeEvidence(
+  jobId: string,
+): Promise<DisputeEvidence | null> {
+  const response = await callContract(
+    requireContractId(),
+    "get_dispute_evidence",
+    [nativeToScVal(jobId, { type: "u64" })],
+    { readOnly: true },
+  );
+  return (response.data as DisputeEvidence) ?? null;
 }
 
 export async function getJobCount(): Promise<number> {

@@ -17,3 +17,9 @@ export interface Job {
   token: string;
   revision_count: number;
 }
+
+export interface DisputeEvidence {
+  evidence_hash: string;
+  raised_at: string;
+  reason_preview: string;
+}
