@@ -550,11 +550,6 @@ export default function DisputesPage() {
   async function handleRaiseDispute(jobId: string, reason: string, evidence: string) {
     const encoder = new TextEncoder();
 
-    const reasonHashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(reason));
-    const reasonHashHex = Array.from(new Uint8Array(reasonHashBuffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-
     let evidenceHashHex: string | undefined;
     if (evidence.trim()) {
       const evidenceHashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(evidence));
