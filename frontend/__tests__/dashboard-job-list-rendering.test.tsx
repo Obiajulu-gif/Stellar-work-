@@ -117,7 +117,8 @@ describe("Dashboard job list rendering", () => {
 
   it("renders skeleton placeholders while jobs are loading", async () => {
     // Hold the count promise open so the loading state is observable.
-    let resolveCount: (n: number) => void = () => { /* noop */ };
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    let resolveCount: (n: number) => void = () => {};
     mockGetJobCount.mockReturnValue(
       new Promise<number>((resolve) => {
         resolveCount = resolve;

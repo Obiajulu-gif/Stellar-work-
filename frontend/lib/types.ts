@@ -23,3 +23,27 @@ export interface DisputeEvidence {
   raised_at: string;
   reason_preview: string;
 }
+
+export type AdminOperationTag =
+  | "UpdateFeeBps"
+  | "TransferAdmin"
+  | "SetDescPayloadMax"
+  | "SetMaxActiveJobsPerClient"
+  | "AddAllowedToken"
+  | "RemoveAllowedToken"
+  | "WithdrawFees"
+  | "UpdateTimelockDelay";
+
+export interface TimelockedOperation {
+  proposer: string;
+  operation: { tag: AdminOperationTag; value: unknown };
+  proposed_at: string;
+  earliest_execution: string;
+  executed: boolean;
+  cancelled: boolean;
+}
+
+export interface ProposalEntry {
+  id: number;
+  op: TimelockedOperation;
+}

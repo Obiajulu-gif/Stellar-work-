@@ -145,6 +145,11 @@ export default function CommandPalette() {
     }
   }, [open]);
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedIndex(0);
+  }, [query]);
+
   if (!open) {
     return null;
   }
