@@ -17,7 +17,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown,wasm32v1-none
           components: rustfmt,rust-src
 
       - name: Check formatting
@@ -46,8 +46,10 @@ jobs:
             cargo install soroban-cli --locked
           fi
 
-      - name: Ensure wasm32 target is available
-        run: rustup target add wasm32-unknown-unknown
+      - name: Ensure wasm32 targets are available
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustup target add wasm32v1-none
 
       - name: Build contract
         working-directory: contracts/escrow/
