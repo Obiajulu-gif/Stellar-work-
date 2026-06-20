@@ -483,7 +483,7 @@ function DisputeCard({
 
 export default function DisputesPage() {
   const { wallet, connectWallet } = useWallet();
-  const { showSuccess, showError } = useToast();
+  const { showSuccess } = useToast();
   const [role, setRole] = useState<Role>("client");
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [eligibleJobs, setEligibleJobs] = useState<EligibleJob[]>([]);
