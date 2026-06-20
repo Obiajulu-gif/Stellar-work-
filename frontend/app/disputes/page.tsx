@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useModalFocusTrap } from "@/lib/modal";
 import { useWallet } from "@/lib/wallet-context";
+import { useToast } from "@/components/ToastProvider";
 import EmptyState from "@/components/EmptyState";
 import NoResultsState from "@/components/NoResultsState";
 import SectionCard from "@/components/SectionCard";
@@ -482,6 +483,7 @@ function DisputeCard({
 
 export default function DisputesPage() {
   const { wallet, connectWallet } = useWallet();
+  const { showSuccess, showError } = useToast();
   const [role, setRole] = useState<Role>("client");
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [eligibleJobs, setEligibleJobs] = useState<EligibleJob[]>([]);
@@ -491,7 +493,6 @@ export default function DisputesPage() {
 
   const [showRaiseModal, setShowRaiseModal] = useState(false);
   const [resolveTarget, setResolveTarget] = useState<Dispute | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   // Sync role with wallet/admin status
   useEffect(() => {
@@ -534,13 +535,6 @@ export default function DisputesPage() {
     void loadDisputes();
   }, [loadDisputes, role]);
 
-  // Toast auto-dismiss
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 3500);
-    return () => clearTimeout(t);
-  }, [toast]);
-
   const filteredDisputes = disputes.filter(d => {
     if (filter === "active") return ["Active", "UnderReview", "PendingEvidence"].includes(d.status);
     if (filter === "resolved") return ["Resolved", "Closed"].includes(d.status);
@@ -582,7 +576,7 @@ export default function DisputesPage() {
       evidenceHash: evidenceHashHex,
     };
     setDisputes((prev) => [newDispute, ...prev]);
-    setToast({ msg: "Dispute raised. Funds held in escrow.", type: "success" });
+    showSuccess("Dispute raised. Funds held in escrow.");
   }
 
   async function handleResolve(id: string, clientShare: number, note: string) {
@@ -614,7 +608,7 @@ export default function DisputesPage() {
           : d
       )
     );
-    setToast({ msg: "Dispute resolved and funds disbursed.", type: "success" });
+    showSuccess("Dispute resolved and funds disbursed.");
   }
 
   const activeCount = disputes.filter(d => ["Active", "UnderReview", "PendingEvidence"].includes(d.status)).length;
@@ -642,20 +636,6 @@ export default function DisputesPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed top-4 right-4 z-[100] flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ring-1 transition-all ${
-            toast.type === "success"
-              ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
-              : "bg-red-50 text-red-800 ring-red-200"
-          }`}
-        >
-          <span>{toast.type === "success" ? "✓" : "✕"}</span>
-          {toast.msg}
-        </div>
-      )}
-
       <div className="mx-auto max-w-3xl px-4 py-8">
         {/* Page header */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
