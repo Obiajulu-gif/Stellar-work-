@@ -520,7 +520,7 @@ export default function DisputesPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await loadDisputesPageData();
+      const data = await loadDisputesPageData(wallet);
       setDisputes(data.disputes);
       setEligibleJobs(data.eligibleJobs);
     } catch {
@@ -586,8 +586,18 @@ export default function DisputesPage() {
   }
 
   async function handleResolve(id: string, clientShare: number, note: string) {
-    // Simulate SC-2 smart contract call
-    await new Promise(res => setTimeout(res, 1200));
+    const dispute = disputes.find(d => d.id === id);
+    if (!dispute) return;
+
+    // Determine winner based on clientShare
+    // In the current contract, resolveDispute takes a winner address (not a split)
+    // We'll use the address that gets > 50% of the funds
+    const winnerAddress = clientShare > 50 ? dispute.client : dispute.freelancer;
+
+    const { resolveDispute } = await import("@/lib/contract");
+    await resolveDispute(dispute.jobId, winnerAddress);
+
+    // Update local state to reflect the resolution
     setDisputes(prev =>
       prev.map(d =>
         d.id === id
