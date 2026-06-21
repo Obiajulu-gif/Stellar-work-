@@ -6,7 +6,7 @@ import DisputesPage from "@/app/disputes/page";
 const mockLoadDisputesPageData = vi.fn();
 
 vi.mock("@/lib/disputes-loader", () => ({
-  loadDisputesPageData: (...args: unknown[]) => mockLoadDisputesPageData(...args),
+  loadDisputesPageData: (wallet?: string) => mockLoadDisputesPageData(wallet),
 }));
 
 vi.mock("@/lib/wallet-context", () => ({
